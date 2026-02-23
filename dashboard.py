@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 import subprocess
+import os
 
 app = FastAPI()
+
+processes = []
 
 @app.get("/", response_class=HTMLResponse)
 def home():
@@ -26,8 +29,15 @@ def home():
 
 @app.get("/start")
 def start_training():
-    subprocess.Popen(["python", "server.py"])
-    subprocess.Popen(["python", "client_1.py"])
-    subprocess.Popen(["python", "client_2.py"])
+    global processes
+
+    if processes:
+        return {"status": "Already running"}
+
+    server = subprocess.Popen(["python", "server.py"])
+    client1 = subprocess.Popen(["python", "client_1.py"])
+    client2 = subprocess.Popen(["python", "client_2.py"])
+
+    processes = [server, client1, client2]
 
     return {"status": "Federated Training Started"}
